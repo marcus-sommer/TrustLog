@@ -980,7 +980,7 @@ export function InterviewWizard() {
         ) : null}
         <div className="flex flex-wrap gap-2">
           <Button onClick={() => downloadPdf(workspace, locale, score)}>{t.interview.downloadPdf}</Button>
-          <Button variant="secondary" onClick={() => downloadMarkdown(workspace, locale)}>
+          <Button variant="secondary" onClick={() => downloadMarkdown(workspace)}>
             {t.interview.downloadMarkdown}
           </Button>
           <Button variant="secondary" onClick={onFinish}>
