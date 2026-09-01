@@ -55,7 +55,7 @@ export function dueState(dueDate: string, completedAt?: string): "done" | "overd
 export function dueLabel(
   dueDate: string,
   completedAt: string | undefined,
-  locale: Locale = "da",
+  locale: Locale = "en",
 ): string {
   const state = dueState(dueDate, completedAt);
   const t = messages[locale].reminders;

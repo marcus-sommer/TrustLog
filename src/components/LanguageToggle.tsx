@@ -38,18 +38,6 @@ export function LanguageToggle() {
     <div className="flex items-center gap-1">
       <button
         type="button"
-        onClick={() => setLocale("da")}
-        aria-label={t.lang.switchToDanish}
-        title={t.lang.da}
-        aria-pressed={locale === "da"}
-        className={`grid h-8 w-9 place-items-center rounded-md border transition ${
-          locale === "da" ? "border-accent bg-accent-soft" : "border-transparent hover:bg-paper"
-        }`}
-      >
-        <DanishFlag />
-      </button>
-      <button
-        type="button"
         onClick={() => setLocale("en")}
         aria-label={t.lang.switchToEnglish}
         title={t.lang.en}
@@ -59,6 +47,18 @@ export function LanguageToggle() {
         }`}
       >
         <BritishFlag clipId={clipId} />
+      </button>
+      <button
+        type="button"
+        onClick={() => setLocale("da")}
+        aria-label={t.lang.switchToDanish}
+        title={t.lang.da}
+        aria-pressed={locale === "da"}
+        className={`grid h-8 w-9 place-items-center rounded-md border transition ${
+          locale === "da" ? "border-accent bg-accent-soft" : "border-transparent hover:bg-paper"
+        }`}
+      >
+        <DanishFlag />
       </button>
     </div>
   );

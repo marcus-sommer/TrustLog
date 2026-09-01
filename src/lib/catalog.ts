@@ -908,21 +908,21 @@ export const DEFAULT_TOMS: Omit<Tom, "enabled">[] = [
 ];
 
 function resolveLocale(locale: unknown): Locale {
-  return locale === "en" || locale === "da" ? locale : "da";
+  return locale === "en" || locale === "da" ? locale : "en";
 }
 
-export function legalBasisLabel(value: LegalBasis, locale: Locale = "da"): string {
+export function legalBasisLabel(value: LegalBasis, locale: Locale = "en"): string {
   return messages[resolveLocale(locale)].legalBasis[value]?.label ?? value;
 }
 
-export function transferLabel(value: TransferMechanism, locale: Locale = "da"): string {
+export function transferLabel(value: TransferMechanism, locale: Locale = "en"): string {
   return messages[resolveLocale(locale)].transfers[value]?.label ?? value;
 }
 
-export function regionLabel(value: HostingRegion, locale: Locale = "da"): string {
+export function regionLabel(value: HostingRegion, locale: Locale = "en"): string {
   return messages[resolveLocale(locale)].regions[value] ?? value;
 }
 
-export function sensitivityLabel(value: DataSensitivity, locale: Locale = "da"): string {
+export function sensitivityLabel(value: DataSensitivity, locale: Locale = "en"): string {
   return messages[resolveLocale(locale)].sensitivity[value]?.label ?? value;
 }

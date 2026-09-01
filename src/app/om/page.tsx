@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLocale } from "@/context/LocaleContext";
 import { useWorkspace } from "@/context/WorkspaceContext";
@@ -71,11 +70,7 @@ export default function AboutPage() {
 
   return (
     <div className="bg-paper">
-      <MarketingHeader>
-        <Link href="/setup">
-          <Button>{t.home.startInterview}</Button>
-        </Link>
-      </MarketingHeader>
+      <MarketingHeader />
 
       <main className="mx-auto max-w-6xl px-5 pb-24 pt-12 lg:px-8 lg:pt-16">
         <section className="grid items-start gap-10 lg:grid-cols-[auto_minmax(0,1fr)] lg:gap-14">
@@ -120,7 +115,7 @@ export default function AboutPage() {
           <p className="mt-3 max-w-2xl text-[15px] leading-7 text-white/85">{copy.ctaBody}</p>
           <div className="mt-7">
             <Button
-              className="bg-white text-accent hover:bg-accent-soft"
+              variant="paper"
               onClick={() => {
                 reset();
                 router.push("/setup");

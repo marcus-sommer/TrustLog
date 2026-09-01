@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { sampleWorkspace } from "@/lib/workspace";
@@ -127,29 +126,13 @@ function useOnceInView<T extends HTMLElement>() {
 
 export default function HomePage() {
   const router = useRouter();
-  const { replace, reset, ready, workspace } = useWorkspace();
+  const { replace, reset } = useWorkspace();
   const { t } = useLocale();
   const story = useOnceInView<HTMLDivElement>();
-  const hasActiveWorkspace =
-    ready &&
-    (Boolean(workspace.organization.name.trim()) ||
-      workspace.interviewComplete ||
-      workspace.interviewStep > 0 ||
-      workspace.systems.length > 0 ||
-      workspace.activities.length > 0);
 
   return (
     <div className="bg-paper">
-      <MarketingHeader>
-        {hasActiveWorkspace ? (
-          <Link href="/workspace" className="text-[14px] text-ink-soft hover:text-ink">
-            {t.home.continueWorkspace}
-          </Link>
-        ) : null}
-        <Link href="/setup">
-          <Button>{t.home.startInterview}</Button>
-        </Link>
-      </MarketingHeader>
+      <MarketingHeader />
 
       <main className="mx-auto max-w-6xl px-5 pt-12 lg:px-8 lg:pt-16">
         <section className="grid items-center gap-14 lg:grid-cols-[1.15fr_0.85fr] lg:gap-20">
@@ -160,6 +143,7 @@ export default function HomePage() {
             <p className="mt-5 max-w-xl text-[17px] leading-8 text-ink-soft">{t.home.lead}</p>
             <div className="mt-8 flex flex-wrap items-center gap-2">
               <Button
+                variant="blue"
                 onClick={() => {
                   reset();
                   router.push("/setup");

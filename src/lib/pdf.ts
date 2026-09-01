@@ -41,7 +41,7 @@ function fileSafe(name: string): string {
 
 export function downloadPdf(
   workspace: Workspace,
-  locale: Locale = "da",
+  locale: Locale = "en",
   score = 0,
 ): void {
   const t = messages[locale];

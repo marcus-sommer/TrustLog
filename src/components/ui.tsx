@@ -87,7 +87,7 @@ export function Button({
   className = "",
   ...props
 }: ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: "primary" | "secondary" | "ghost" | "outline" | "danger";
+  variant?: "primary" | "secondary" | "ghost" | "outline" | "danger" | "blue" | "paper";
 }) {
   const variants = {
     primary: "bg-accent text-white hover:bg-accent-hover",
@@ -96,6 +96,8 @@ export function Button({
     outline:
       "border border-transparent bg-transparent text-ink-soft hover:text-ink hover:bg-accent-soft/50",
     danger: "bg-danger/10 text-danger hover:bg-danger/15",
+    blue: "bg-[#2563eb] text-white hover:bg-[#1d4ed8]",
+    paper: "bg-paper text-ink hover:bg-raised",
   };
   return (
     <button

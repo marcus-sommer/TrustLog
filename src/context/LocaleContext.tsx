@@ -29,6 +29,7 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
   );
   useEffect(() => {
     document.documentElement.lang = locale;
+    document.title = messages[locale].metaTitle;
   }, [locale]);
   return <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>;
 }

@@ -16,14 +16,14 @@ const serif = Source_Serif_4({
 });
 
 export const metadata: Metadata = {
-  title: "TrustLog — GDPR-fortegnelse til SMV’er",
+  title: "TrustLog — GDPR made easy",
   description:
-    "Et enkelt interview, der skaber en fortegnelse over behandlingsaktiviteter efter GDPR artikel 30, som I kan downloade som PDF og gemme i jeres eget arkiv.",
+    "A guided interview that produces an Article 30 Record of Processing Activities your organisation can download as PDF and keep in its own archive.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="da" className={`${sans.variable} ${serif.variable} h-full antialiased`}>
+    <html lang="en" className={`${sans.variable} ${serif.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col font-sans">
         <LocaleProvider>
           <WorkspaceProvider>

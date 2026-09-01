@@ -57,6 +57,7 @@ export interface SystemRecord {
   purpose: string;
   dataTypes: string[];
   dataSubjects: string[];
+  whoHasAccess: string;
   hostingRegion: HostingRegion;
   hostingNotes: string;
   isProcessor: boolean;

@@ -1,9 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useLocale } from "@/context/LocaleContext";
 import { MarketingHeader } from "@/components/MarketingHeader";
-import { Button } from "@/components/ui";
 import { privacy } from "@/lib/privacy";
 
 export default function PrivacyPage() {
@@ -12,11 +10,7 @@ export default function PrivacyPage() {
 
   return (
     <div className="bg-paper">
-      <MarketingHeader>
-        <Link href="/setup">
-          <Button>{t.home.startInterview}</Button>
-        </Link>
-      </MarketingHeader>
+      <MarketingHeader />
 
       <main className="mx-auto max-w-2xl px-5 pb-24 pt-12 lg:px-8 lg:pt-16">
         <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-accent">

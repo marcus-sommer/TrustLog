@@ -19,7 +19,6 @@ export type Messages = {
     about: string;
   };
   footer: {
-    tagline: string;
     about: string;
     privacy: string;
   };
@@ -40,7 +39,6 @@ export type Messages = {
     switchToDanish: string;
   };
   home: {
-    continueWorkspace: string;
     startInterview: string;
     title: string;
     lead: string;
@@ -60,6 +58,8 @@ export type Messages = {
     back: string;
     continue: string;
     openWorkspace: string;
+    closeInterview: string;
+    closeInterviewConfirm: string;
   };
   interview: {
     steps: { title: string; blurb: string }[];
@@ -96,14 +96,23 @@ export type Messages = {
     toolsTip: string;
     somethingElse: string;
     somethingElseHint: string;
+    somethingElsePlaceholder: string;
     add: string;
     remove: string;
     flowsTip: string;
     flowsEmpty: string;
     vendor: string;
     usedFor: string;
+    usedForHint: string;
     dataInSystem: string;
     whoseData: string;
+    whoHasAccess: string;
+    whoHasAccessHint: string;
+    thirdCountry: string;
+    yes: string;
+    no: string;
+    thirdCountryBasis: string;
+    extraNotes: string;
     hostedWhere: string;
     safeguard: string;
     hostingNotes: string;
@@ -357,7 +366,7 @@ export type Messages = {
 };
 
 const en: Messages = {
-  metaTitle: "TrustLog — GDPR records for SMEs",
+  metaTitle: "TrustLog — GDPR made easy",
   metaDescription:
     "A guided interview that produces an Article 30 Record of Processing Activities your organisation can download as PDF and keep in its own archive.",
   brand: "TrustLog",
@@ -376,7 +385,6 @@ const en: Messages = {
     about: "About TrustLog",
   },
   footer: {
-    tagline: "Law, made teachable.",
     about: "About TrustLog",
     privacy: "Privacy policy",
   },
@@ -396,7 +404,7 @@ const en: Messages = {
       },
       {
         title: "Technical design",
-        body: "I am studying an MSc in Web Communication Design at the University of Southern Denmark, combining Python, SQL, data ethics and UX design so the tool feels like a conversation — not a compliance system built for lawyers.",
+        body: "I am studying an MSc in IT (Web Communication Design) at the University of Southern Denmark, combining Python, AI, data ethics and UX design so the tool feels like a conversation — not a compliance system built for lawyers.",
       },
       {
         title: "Plain language",
@@ -405,7 +413,7 @@ const en: Messages = {
     ],
     ctaTitle: "Ready to try it yourself?",
     ctaBody: "Start the interview here. No account. Your draft stays in this browser until you choose to share it.",
-    cta: "Start the interview here",
+    cta: "Start the interview here. No login required.",
   },
   lang: {
     da: "Danish",
@@ -414,9 +422,8 @@ const en: Messages = {
     switchToDanish: "Skift hjemmesiden til dansk",
   },
   home: {
-    continueWorkspace: "Continue workspace",
     startInterview: "Start the interview",
-    title: "The easy way to your GDPR record.",
+    title: "GDPR made easy",
     lead: "Answer plain questions about your company, tools, and day-to-day data. TrustLog turns that into an audit-ready Article 30 record — as a PDF you download and store in your own archive.",
     startScratch: "Start from scratch",
     previewSample: "Preview a sample company",
@@ -433,22 +440,22 @@ const en: Messages = {
       {
         step: "Step 1",
         title: "Interview",
-        body: "Seven short questions about your company, tools, and day-to-day data. Common SME systems are pre-filled, so you mostly confirm, not invent.",
+        body: "Answer a series of short questions about your company, your tools, and the data you use day to day. The record is generated from your input.",
       },
       {
         step: "Step 2",
         title: "Archive",
-        body: "Download a clean PDF and keep it with your contracts. TrustLog is the drafting desk — the official copy lives with you.",
+        body: "Download the record in the format you prefer, and keep it somewhere safe in your organisation's archive.",
       },
       {
         step: "Step 3",
         title: "Quality check",
-        body: "Review the record, set reminders for the annual review and processor checks, and invite a colleague. That is how it stays alive — not a document that gathers dust.",
+        body: "The record is reviewed together with TrustLog. You are offered a sparring session on maintaining your Article 30 record and other GDPR-related questions.",
       },
     ],
-    whyTitle: "Why small companies still need this",
+    whyTitle: "GDPR is not just for big companies",
     whyBody:
-      "GDPR Article 30(5) does not give a free pass below 250 employees if you process personal data regularly — and payroll, customers, and accounting almost always count. TrustLog keeps the language human so the record gets written, not postponed.",
+      "If you pay salaries, have customers, or use an accounting tool, names and emails already sit in your systems. You need to be able to say what you hold, where it lives, and what you use it for — even if you are five people with no IT department. TrustLog asks in ordinary language, so you get it written down without becoming lawyers.",
   },
   setup: {
     skip: "Skip to workspace",
@@ -456,13 +463,16 @@ const en: Messages = {
     back: "Back",
     continue: "Continue",
     openWorkspace: "Open workspace",
+    closeInterview: "Close interview",
+    closeInterviewConfirm:
+      "Close the interview and delete the draft in this browser? This cannot be undone.",
   },
   interview: {
     steps: [
       { title: "Your company", blurb: "The basics that go on the cover of the record." },
       { title: "Who is responsible", blurb: "Contact person, DPO, and EU representative." },
       { title: "Tools you use", blurb: "Tick the systems that run the business day to day." },
-      { title: "Data in each tool", blurb: "Confirm what flows through each system, and where it lives." },
+      { title: "Data in each tool", blurb: "For each system: vendor, purpose, people, data, access, and whether anything leaves the EU." },
       { title: "What you use data for", blurb: "Each purpose becomes a row in your Article 30 record." },
       { title: "How you protect it", blurb: "A short list of security measures (GDPR Art. 32)." },
       { title: "Review & export", blurb: "Download the PDF and set a reminder to keep it current." },
@@ -504,16 +514,25 @@ const en: Messages = {
       "Tick what you actually use. We pre-fill typical data types, hosting, and legal notes — you can correct them on the next screen.",
     somethingElse: "Something else?",
     somethingElseHint: "Accounting tool, industry system, or a spreadsheet that holds customer data.",
+    somethingElsePlaceholder: "Name of the tool",
     add: "Add",
     remove: "Remove",
     flowsTip:
-      "For each tool: what kind of information sits there, who it is about, and whether the vendor is outside the EU. Suggested answers are already filled in.",
+      "Go through each tool. Suggested answers are filled in — change anything that does not match how you actually work.",
     flowsEmpty:
       "Add at least one tool first. If you truly have no systems, go back and add email or accounting — almost every SME has both.",
     vendor: "Vendor",
-    usedFor: "What it is used for",
-    dataInSystem: "Data in this system",
-    whoseData: "Whose data",
+    usedFor: "What is the system used for?",
+    usedForHint: "A short description.",
+    dataInSystem: "What types of personal data do you process in this system?",
+    whoseData: "Who do you hold data about in this system?",
+    whoHasAccess: "Who has access to this system?",
+    whoHasAccessHint: "e.g. HR, management, or all staff",
+    thirdCountry: "Is data shared with third countries?",
+    yes: "Yes",
+    no: "No",
+    thirdCountryBasis: "If data is shared with third countries, what is the legal basis?",
+    extraNotes: "Additional notes",
     hostedWhere: "Where is it hosted?",
     safeguard: "Safeguard if data leaves the EU/EEA",
     hostingNotes: "Hosting notes",
@@ -1199,7 +1218,7 @@ const en: Messages = {
 
 const da: Messages = {
   ...en,
-  metaTitle: "TrustLog — GDPR-fortegnelse til SMV’er",
+  metaTitle: "TrustLog — GDPR gjort simpelt",
   metaDescription:
     "Et enkelt interview, der skaber en fortegnelse over behandlingsaktiviteter efter GDPR artikel 30, som I kan downloade som PDF og gemme i jeres eget arkiv.",
   loading: "Indlæser…",
@@ -1216,7 +1235,6 @@ const da: Messages = {
     about: "Bag TrustLog",
   },
   footer: {
-    tagline: "Jura sat i system med pædagogik.",
     about: "Bag TrustLog",
     privacy: "Privatlivspolitik",
   },
@@ -1236,7 +1254,7 @@ const da: Messages = {
       },
       {
         title: "Teknisk design",
-        body: "Jeg læser cand.merc. i Web Communication Design på SDU og samler Python, SQL, dataetik og UX-design, så værktøjet føles som en samtale — ikke som et compliance-system bygget til advokater.",
+        body: "Jeg læser cand.IT i Web Communication Design på SDU og samler Python, AI, dataetik og UX-design, så værktøjet føles som en samtale — ikke som et compliance-system bygget til advokater.",
       },
       {
         title: "Almindeligt sprog",
@@ -1245,7 +1263,7 @@ const da: Messages = {
     ],
     ctaTitle: "Klar til at teste det selv?",
     ctaBody: "Start interviewet her. Intet login. Kladden bliver i denne browser, indtil I selv vælger at dele den.",
-    cta: "Start interviewet her",
+    cta: "Start interviewet her. Intet login påkrævet.",
   },
   lang: {
     da: "Dansk",
@@ -1254,9 +1272,8 @@ const da: Messages = {
     switchToDanish: "Skift hjemmesiden til dansk",
   },
   home: {
-    continueWorkspace: "Fortsæt arbejdsområde",
     startInterview: "Start interviewet",
-    title: "Den nemme vej til jeres GDPR-fortegnelse.",
+    title: "GDPR gjort simpelt",
     lead: "Svar på enkle spørgsmål om virksomheden, jeres værktøjer og de data, I bruger til daglig. TrustLog samler det til en artikel 30-fortegnelse, I kan downloade som PDF og gemme i jeres eget arkiv.",
     startScratch: "Start forfra",
     previewSample: "Se et eksempel-firma",
@@ -1273,22 +1290,22 @@ const da: Messages = {
       {
         step: "Trin 1",
         title: "Interview",
-        body: "Syv korte spørgsmål om virksomheden, jeres værktøjer og de data, I bruger til daglig. Almindelige SMV-systemer er udfyldt på forhånd, så I mest bekræfter, ikke opfinder.",
+        body: "Besvar en række korte spørgsmål om virksomheden, jeres værktøjer og de data, I bruger til daglig. Fortegnelsen genereres ud fra jeres input.",
       },
       {
         step: "Trin 2",
         title: "Arkivering",
-        body: "Download en ren PDF og læg den sammen med jeres kontrakter. TrustLog er skrivebordet — den officielle kopi ligger hos jer.",
+        body: "Download fortegnelsen i det format I ønsker, og placér den et sikkert sted i jeres organisations arkiv.",
       },
       {
         step: "Trin 3",
         title: "Kvalitetstjek",
-        body: "Gennemgå fortegnelsen, sæt påmindelser til det årlige eftersyn og tjek af databehandlere, og invitér en kollega. Så holdes den i live — ikke et dokument, der samler støv.",
+        body: "Fortegnelsen gennemgås i samarbejde med TrustLog. I tilbydes en sparringssession om vedligeholdelse af jeres Artikel 30-fortegnelse samt andre GDPR-relaterede spørgsmål.",
       },
     ],
-    whyTitle: "Hvorfor små virksomheder alligevel skal have den",
+    whyTitle: "GDPR er ikke kun for de store",
     whyBody:
-      "GDPR artikel 30, stk. 5, giver ikke fritagelse under 250 medarbejdere, hvis I behandler personoplysninger løbende — og løn, kunder og bogføring tæller næsten altid. TrustLog holder sproget jordnært, så fortegnelsen bliver skrevet, ikke udskudt.",
+      "Betaler I løn, har I kunder, eller bruger I et regnskabsprogram, ligger der allerede navne og e-mails i jeres systemer. Så skal I kunne fortælle, hvilke oplysninger I har, hvor de ligger, og hvad I bruger dem til — også selvom I er fem mennesker uden en IT-afdeling. TrustLog stiller spørgsmålene på almindeligt dansk, så I får det skrevet ned uden at blive jurister.",
   },
   setup: {
     skip: "Spring til arbejdsområde",
@@ -1296,13 +1313,16 @@ const da: Messages = {
     back: "Tilbage",
     continue: "Fortsæt",
     openWorkspace: "Åbn arbejdsområde",
+    closeInterview: "Luk interviewet",
+    closeInterviewConfirm:
+      "Vil du lukke interviewet og slette kladden i denne browser? Det kan ikke fortrydes.",
   },
   interview: {
     steps: [
       { title: "Jeres virksomhed", blurb: "Det grundlæggende, der står på forsiden af fortegnelsen." },
       { title: "Hvem er ansvarlig", blurb: "Kontaktperson, DPO og EU-repræsentant." },
       { title: "Værktøjer I bruger", blurb: "Sæt kryds ved de systemer, der driver hverdagen." },
-      { title: "Data i hvert værktøj", blurb: "Bekræft, hvad der løber gennem hvert system, og hvor det ligger." },
+      { title: "Data i hvert værktøj", blurb: "For hvert system: leverandør, formål, personer, data, adgang, og om noget sendes uden for EU." },
       { title: "Hvad I bruger data til", blurb: "Hvert formål bliver en række i jeres artikel 30-fortegnelse." },
       { title: "Hvordan I beskytter dem", blurb: "En kort liste over sikkerhedsforanstaltninger (GDPR art. 32)." },
       { title: "Gennemgå og eksportér", blurb: "Download PDF’en og sæt en påmindelse, så den ikke bliver forældet." },
@@ -1344,16 +1364,25 @@ const da: Messages = {
       "Sæt kryds ved det, I faktisk bruger. Vi udfylder typiske datatyper, hosting og juridiske noter — I kan rette på næste skærm.",
     somethingElse: "Noget andet?",
     somethingElseHint: "Regnskabsprogram, branchesystem eller et regneark med kundedata.",
+    somethingElsePlaceholder: "Navn på værktøjet",
     add: "Tilføj",
     remove: "Fjern",
     flowsTip:
-      "For hvert værktøj: hvilken slags oplysninger ligger der, hvem handler det om, og om leverandøren er uden for EU. Forslagene er allerede udfyldt.",
+      "Gå hvert værktøj igennem. Forslagene er udfyldt — ret det, der ikke passer til jeres hverdag.",
     flowsEmpty:
       "Tilføj mindst ét værktøj først. Har I virkelig ingen systemer, så gå tilbage og tilføj e-mail eller regnskab — næsten alle SMV’er har begge dele.",
     vendor: "Leverandør",
-    usedFor: "Hvad det bruges til",
-    dataInSystem: "Data i dette system",
-    whoseData: "Hvis data",
+    usedFor: "Hvad bruges systemet til?",
+    usedForHint: "Kort beskrivelse.",
+    dataInSystem: "Hvilke typer af persondata behandler I i dette system?",
+    whoseData: "Hvem har I data om i dette system?",
+    whoHasAccess: "Hvem har adgang til systemet?",
+    whoHasAccessHint: "Fx HR, ledelse eller alle medarbejdere",
+    thirdCountry: "Deles data med tredjelande?",
+    yes: "Ja",
+    no: "Nej",
+    thirdCountryBasis: "Hvis data deles med tredjelande, hvad er det lovmæssige grundlag for dette?",
+    extraNotes: "Supplerende noter",
     hostedWhere: "Hvor ligger det?",
     safeguard: "Garanti, hvis data forlader EU/EØS",
     hostingNotes: "Noter om hosting",

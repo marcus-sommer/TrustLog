@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type Dispatch, type SetStateAction } from "react";
 import { useRouter } from "next/navigation";
 import {
   ACTIVITY_TEMPLATES,
@@ -9,7 +9,6 @@ import {
   EMPLOYEE_BANDS,
   INDUSTRIES,
   LEGAL_BASIS_OPTIONS,
-  REGION_OPTIONS,
   SENSITIVITY_OPTIONS,
   SYSTEM_TEMPLATES,
   TRANSFER_OPTIONS,
@@ -23,6 +22,7 @@ import {
   activityText,
   dataLabel,
   subjectLabel,
+  systemNotes,
   systemPurpose,
   tomCopy,
 } from "@/lib/localize";
@@ -60,12 +60,12 @@ function toggleValue<T>(list: T[], value: T): T[] {
 
 export function InterviewWizard() {
   const router = useRouter();
-  const { workspace, update } = useWorkspace();
+  const { workspace, update, reset } = useWorkspace();
   const { t, locale } = useLocale();
   const step = Math.min(workspace.interviewStep, INTERVIEW_STEPS.length - 1);
   const meta = t.interview.steps[step];
   const { score, items } = completeness(workspace);
-  const [customTool, setCustomTool] = useState("");
+  const [customTools, setCustomTools] = useState<Record<string, string>>({});
   const [openActivity, setOpenActivity] = useState<string | null>(
     workspace.activities[0]?.id ?? null,
   );
@@ -124,6 +124,12 @@ export function InterviewWizard() {
     router.push("/workspace");
   }
 
+  function closeInterview() {
+    if (!window.confirm(t.setup.closeInterviewConfirm)) return;
+    reset();
+    router.push("/");
+  }
+
   return (
     <div className="mx-auto flex min-h-full max-w-6xl gap-12 px-5 py-10 lg:px-8">
       <ol className="sticky top-10 hidden h-fit w-52 shrink-0 lg:block">
@@ -178,7 +184,7 @@ export function InterviewWizard() {
             : step === 1
               ? PeopleStep()
               : step === 2
-                ? ToolsStep({ groupedSystems, customTool, setCustomTool })
+                ? ToolsStep({ groupedSystems, customTools, setCustomTools })
                 : step === 3
                   ? FlowsStep({ patchSystem })
                   : step === 4
@@ -194,9 +200,14 @@ export function InterviewWizard() {
         </div>
 
         <div className="mt-10 flex max-w-3xl items-center justify-between gap-3 border-t border-line pt-6">
-          <Button variant="ghost" onClick={() => go(step - 1)} disabled={step === 0}>
-            {t.setup.back}
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="ghost" onClick={() => go(step - 1)} disabled={step === 0}>
+              {t.setup.back}
+            </Button>
+            <Button variant="ghost" onClick={closeInterview}>
+              {t.setup.closeInterview}
+            </Button>
+          </div>
           {step < INTERVIEW_STEPS.length - 1 ? (
             <Button
               onClick={() => {
@@ -382,28 +393,92 @@ export function InterviewWizard() {
 
   function ToolsStep({
     groupedSystems,
-    customTool,
-    setCustomTool,
+    customTools,
+    setCustomTools,
   }: {
     groupedSystems: [string, typeof SYSTEM_TEMPLATES][];
-    customTool: string;
-    setCustomTool: (value: string) => void;
+    customTools: Record<string, string>;
+    setCustomTools: Dispatch<SetStateAction<Record<string, string>>>;
   }) {
     const selected = new Set(workspace.systems.map((s) => s.catalogId).filter(Boolean));
+    const knownCategories = new Set(groupedSystems.map(([category]) => category));
+    const leftoverCustom = workspace.systems.filter(
+      (system) => !system.catalogId && !knownCategories.has(system.category),
+    );
+
     function toggleTemplate(id: string) {
       const existing = workspace.systems.find((s) => s.catalogId === id);
       if (existing) {
-        update({
-          systems: workspace.systems.filter((s) => s.id !== existing.id),
-          activities: workspace.activities.map((activity) => ({
-            ...activity,
-            systemIds: activity.systemIds.filter((sid) => sid !== existing.id),
-          })),
-        });
+        removeSystem(existing.id);
         return;
       }
       update({ systems: [...workspace.systems, systemFromCatalog(id)] });
     }
+
+    function removeSystem(id: string) {
+      update({
+        systems: workspace.systems.filter((system) => system.id !== id),
+        activities: workspace.activities.map((activity) => ({
+          ...activity,
+          systemIds: activity.systemIds.filter((systemId) => systemId !== id),
+        })),
+      });
+    }
+
+    function addCustom(category: string) {
+      const name = (customTools[category] ?? "").trim();
+      if (!name) return;
+      update({ systems: [...workspace.systems, createCustomSystem(name, category)] });
+      setCustomTools((current) => ({ ...current, [category]: "" }));
+    }
+
+    function categoryExtras(category: string) {
+      const value = customTools[category] ?? "";
+      const added = workspace.systems.filter(
+        (system) => !system.catalogId && system.category === category,
+      );
+      return (
+        <>
+          <div className="mt-3 flex gap-2">
+            <div className="flex-1">
+              <TextField
+                label={t.interview.somethingElse}
+                value={value}
+                onChange={(e) =>
+                  setCustomTools((current) => ({ ...current, [category]: e.target.value }))
+                }
+                placeholder={t.interview.somethingElsePlaceholder}
+                onKeyDown={(e) => {
+                  if (e.key !== "Enter") return;
+                  e.preventDefault();
+                  addCustom(category);
+                }}
+              />
+            </div>
+            <Button variant="secondary" className="mt-7" onClick={() => addCustom(category)}>
+              {t.interview.add}
+            </Button>
+          </div>
+          {added.length > 0 ? (
+            <ul className="mt-2 text-[14px] text-ink-soft">
+              {added.map((system) => (
+                <li key={system.id} className="flex items-center justify-between py-1">
+                  {system.name}
+                  <button
+                    type="button"
+                    className="text-[13px] text-muted hover:text-danger"
+                    onClick={() => removeSystem(system.id)}
+                  >
+                    {t.interview.remove}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </>
+      );
+    }
+
     return (
       <>
         <Tip>{t.interview.toolsTip}</Tip>
@@ -423,57 +498,29 @@ export function InterviewWizard() {
                 />
               ))}
             </div>
+            {categoryExtras(category)}
           </div>
         ))}
-        <div className="flex gap-2">
-          <div className="flex-1">
-            <TextField
-              label={t.interview.somethingElse}
-              hint={t.interview.somethingElseHint}
-              value={customTool}
-              onChange={(e) => setCustomTool(e.target.value)}
-              placeholder="e.g. Industry ERP"
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  if (!customTool.trim()) return;
-                  update({ systems: [...workspace.systems, createCustomSystem(customTool.trim())] });
-                  setCustomTool("");
-                }
-              }}
-            />
-          </div>
-          <Button
-            variant="secondary"
-            className="mt-7"
-            onClick={() => {
-              if (!customTool.trim()) return;
-              update({ systems: [...workspace.systems, createCustomSystem(customTool.trim())] });
-              setCustomTool("");
-            }}
-          >
-            {t.interview.add}
-          </Button>
-        </div>
-        {workspace.systems.some((s) => !s.catalogId) ? (
-          <ul className="text-[14px] text-ink-soft">
-            {workspace.systems
-              .filter((s) => !s.catalogId)
-              .map((s) => (
-                <li key={s.id} className="flex items-center justify-between py-1">
-                  {s.name}
+        {leftoverCustom.length > 0 ? (
+          <div>
+            <h2 className="mb-2 text-[13px] font-medium text-muted">
+              {t.categories.Other ?? "Other"}
+            </h2>
+            <ul className="text-[14px] text-ink-soft">
+              {leftoverCustom.map((system) => (
+                <li key={system.id} className="flex items-center justify-between py-1">
+                  {system.name}
                   <button
                     type="button"
                     className="text-[13px] text-muted hover:text-danger"
-                    onClick={() =>
-                      update({ systems: workspace.systems.filter((item) => item.id !== s.id) })
-                    }
+                    onClick={() => removeSystem(system.id)}
                   >
                     {t.interview.remove}
                   </button>
                 </li>
               ))}
-          </ul>
+            </ul>
+          </div>
         ) : null}
       </>
     );
@@ -492,54 +539,26 @@ export function InterviewWizard() {
     return (
       <>
         <Tip>{t.interview.flowsTip}</Tip>
-        <div className="space-y-4">
+        <div className="space-y-6">
           {workspace.systems.map((system) => (
-            <details
-              key={system.id}
-              open
-              className="rounded-xl border border-line bg-raised px-4 py-3"
-            >
-              <summary className="cursor-pointer list-none">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <div className="font-medium text-ink">{system.name}</div>
-                    <div className="text-[12.5px] text-muted">
-                      {system.vendor || t.interview.custom} ·{" "}
-                      {t.categories[system.category] ?? system.category}
-                    </div>
-                  </div>
-                  <span className="text-[12px] text-accent">{t.interview.edit}</span>
-                </div>
-              </summary>
-              <div className="mt-4 grid gap-4 border-t border-line pt-4">
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <TextField
-                    label={t.interview.vendor}
-                    value={system.vendor}
-                    onChange={(e) => patchSystem(system.id, { vendor: e.target.value })}
-                  />
-                  <TextField
-                    label={t.interview.usedFor}
-                    value={systemPurpose(locale, system)}
-                    onChange={(e) => patchSystem(system.id, { purpose: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <p className="mb-2 text-[13px] font-medium text-ink">{t.interview.dataInSystem}</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {Array.from(new Set([...DATA_TYPE_OPTIONS, ...system.dataTypes])).map((item) => (
-                      <Chip
-                        key={item}
-                        selected={system.dataTypes.includes(item)}
-                        onClick={() =>
-                          patchSystem(system.id, { dataTypes: toggleValue(system.dataTypes, item) })
-                        }
-                      >
-                        {dataLabel(locale, item)}
-                      </Chip>
-                    ))}
-                  </div>
-                </div>
+            <article key={system.id} className="rounded-2xl border border-line bg-raised p-6">
+              <h2 className="font-serif text-[22px] leading-7 text-ink">{system.name}</h2>
+              <p className="mt-1 text-[13px] text-muted">
+                {t.categories[system.category] ?? system.category}
+              </p>
+              <div className="mt-6 space-y-5">
+                <TextField
+                  label={t.interview.vendor}
+                  value={system.vendor}
+                  onChange={(e) => patchSystem(system.id, { vendor: e.target.value })}
+                />
+                <TextArea
+                  label={t.interview.usedFor}
+                  hint={t.interview.usedForHint}
+                  value={systemPurpose(locale, system)}
+                  onChange={(e) => patchSystem(system.id, { purpose: e.target.value })}
+                  className="min-h-[72px]"
+                />
                 <div>
                   <p className="mb-2 text-[13px] font-medium text-ink">{t.interview.whoseData}</p>
                   <div className="flex flex-wrap gap-1.5">
@@ -560,60 +579,80 @@ export function InterviewWizard() {
                     )}
                   </div>
                 </div>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <SelectField
-                    label={t.interview.hostedWhere}
-                    value={system.hostingRegion}
-                    onChange={(e) =>
-                      patchSystem(system.id, {
-                        hostingRegion: e.target.value as SystemRecord["hostingRegion"],
-                      })
-                    }
-                  >
-                    {REGION_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {t.regions[option.value]}
-                      </option>
+                <div>
+                  <p className="mb-2 text-[13px] font-medium text-ink">{t.interview.dataInSystem}</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {Array.from(new Set([...DATA_TYPE_OPTIONS, ...system.dataTypes])).map((item) => (
+                      <Chip
+                        key={item}
+                        selected={system.dataTypes.includes(item)}
+                        onClick={() =>
+                          patchSystem(system.id, { dataTypes: toggleValue(system.dataTypes, item) })
+                        }
+                      >
+                        {dataLabel(locale, item)}
+                      </Chip>
                     ))}
-                  </SelectField>
+                  </div>
+                </div>
+                <TextField
+                  label={t.interview.whoHasAccess}
+                  hint={t.interview.whoHasAccessHint}
+                  value={system.whoHasAccess ?? ""}
+                  onChange={(e) => patchSystem(system.id, { whoHasAccess: e.target.value })}
+                />
+                <div>
+                  <p className="mb-2 text-[13px] font-medium text-ink">{t.interview.thirdCountry}</p>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <ChoiceCard
+                      selected={!system.transfersOutsideEea}
+                      title={t.interview.no}
+                      onClick={() =>
+                        patchSystem(system.id, {
+                          transfersOutsideEea: false,
+                          transferMechanism: "none",
+                        })
+                      }
+                    />
+                    <ChoiceCard
+                      selected={system.transfersOutsideEea}
+                      title={t.interview.yes}
+                      onClick={() =>
+                        patchSystem(system.id, {
+                          transfersOutsideEea: true,
+                          transferMechanism:
+                            system.transferMechanism === "none" ? "sccs" : system.transferMechanism,
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+                {system.transfersOutsideEea ? (
                   <SelectField
-                    label={t.interview.safeguard}
+                    label={t.interview.thirdCountryBasis}
                     value={system.transferMechanism}
                     onChange={(e) =>
                       patchSystem(system.id, {
                         transferMechanism: e.target.value as TransferMechanism,
-                        transfersOutsideEea: e.target.value !== "none",
+                        transfersOutsideEea: true,
                       })
                     }
                   >
-                    {TRANSFER_OPTIONS.map((option) => (
+                    {TRANSFER_OPTIONS.filter((option) => option.value !== "none").map((option) => (
                       <option key={option.value} value={option.value}>
                         {t.transfers[option.value].label}
                       </option>
                     ))}
                   </SelectField>
-                </div>
+                ) : null}
                 <TextArea
-                  label={t.interview.hostingNotes}
-                  value={system.hostingNotes}
+                  label={t.interview.extraNotes}
+                  value={systemNotes(locale, system)}
                   onChange={(e) => patchSystem(system.id, { hostingNotes: e.target.value })}
+                  className="min-h-[140px]"
                 />
-                <div className="flex flex-wrap gap-2">
-                  <Chip
-                    selected={system.isProcessor}
-                    onClick={() => patchSystem(system.id, { isProcessor: !system.isProcessor })}
-                  >
-                    {t.interview.vendorProcesses}
-                  </Chip>
-                  <Chip
-                    selected={system.dpaInPlace}
-                    onClick={() => patchSystem(system.id, { dpaInPlace: !system.dpaInPlace })}
-                  >
-                    {t.interview.dpaInPlace}
-                  </Chip>
-                </div>
               </div>
-            </details>
+            </article>
           ))}
         </div>
       </>

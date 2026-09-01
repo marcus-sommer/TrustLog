@@ -4,7 +4,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { useLocale } from "@/context/LocaleContext";
+import { useWorkspace } from "@/context/WorkspaceContext";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { Button } from "@/components/ui";
+import { hasOpenDraft } from "@/lib/workspace";
 
 export function MarketingHeader({
   compact = false,
@@ -15,7 +18,10 @@ export function MarketingHeader({
 }) {
   const pathname = usePathname();
   const { t } = useLocale();
+  const { ready, workspace } = useWorkspace();
   const aboutActive = pathname === "/om";
+  const onInterview = pathname === "/setup";
+  const hasDraft = ready && hasOpenDraft(workspace);
 
   return (
     <header className={compact ? "border-b border-line bg-raised" : undefined}>
@@ -40,6 +46,11 @@ export function MarketingHeader({
             {t.nav.about}
           </Link>
           <LanguageToggle />
+          {!onInterview ? (
+            <Link href="/setup">
+              <Button>{hasDraft ? t.workspace.continueInterview : t.home.startInterview}</Button>
+            </Link>
+          ) : null}
           {children}
         </div>
       </div>

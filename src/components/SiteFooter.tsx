@@ -12,7 +12,6 @@ export function SiteFooter() {
       <div className="mx-auto flex max-w-6xl flex-col gap-4 px-5 py-8 sm:flex-row sm:items-center sm:justify-between lg:px-8">
         <div>
           <p className="font-serif text-[16px] tracking-tight text-ink">{t.brand}</p>
-          <p className="mt-1 text-[13px] text-muted">{t.footer.tagline}</p>
         </div>
         <nav className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px]">
           <Link href="/om" className="text-ink-soft hover:text-ink">

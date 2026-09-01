@@ -16,7 +16,7 @@ export const INTERVIEW_STEPS = [
   { id: "company", title: "Your company", blurb: "The basics that go on the cover of the record." },
   { id: "people", title: "Who is responsible", blurb: "Contact person, DPO, and EU representative." },
   { id: "tools", title: "Tools you use", blurb: "Tick the systems that run the business day to day." },
-  { id: "flows", title: "Data in each tool", blurb: "Confirm what flows through each system, and where it lives." },
+  { id: "flows", title: "Data in each tool", blurb: "For each system: vendor, purpose, people, data, access, and whether anything leaves the EU." },
   { id: "activities", title: "What you use data for", blurb: "Each purpose becomes a row in your Article 30 record." },
   { id: "protection", title: "How you protect it", blurb: "A short list of security measures (GDPR Art. 32)." },
   { id: "review", title: "Review & export", blurb: "Download the PDF and set a reminder to keep it current." },
@@ -90,6 +90,16 @@ export function createWorkspace(partial?: Partial<Workspace>): Workspace {
   };
 }
 
+export function hasOpenDraft(workspace: Workspace): boolean {
+  return (
+    Boolean(workspace.organization.name.trim()) ||
+    workspace.interviewComplete ||
+    workspace.interviewStep > 0 ||
+    workspace.systems.length > 0 ||
+    workspace.activities.length > 0
+  );
+}
+
 export function systemFromCatalog(catalogId: string): SystemRecord {
   const template = SYSTEM_TEMPLATES.find((item) => item.id === catalogId);
   if (!template) {
@@ -104,6 +114,7 @@ export function systemFromCatalog(catalogId: string): SystemRecord {
     purpose: template.purpose,
     dataTypes: [...template.dataTypes],
     dataSubjects: [...template.dataSubjects],
+    whoHasAccess: "",
     hostingRegion: template.hostingRegion,
     hostingNotes: template.hostingNotes,
     isProcessor: template.isProcessor,
@@ -183,6 +194,7 @@ export function createCustomSystem(name: string, category = "Other"): SystemReco
     purpose: defaults?.purpose ?? "",
     dataTypes: defaults?.dataTypes ? [...defaults.dataTypes] : [],
     dataSubjects: defaults?.dataSubjects ? [...defaults.dataSubjects] : [],
+    whoHasAccess: "",
     hostingRegion: "unknown",
     hostingNotes: "",
     isProcessor: true,

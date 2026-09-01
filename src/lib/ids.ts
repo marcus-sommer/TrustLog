@@ -18,7 +18,7 @@ export function todayIso(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-export function formatDate(iso: string, locale: Locale = "da"): string {
+export function formatDate(iso: string, locale: Locale = "en"): string {
   if (!iso) return "—";
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return iso;

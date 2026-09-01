@@ -3,7 +3,7 @@ export type Locale = "da" | "en";
 const KEY = "trustlog.locale";
 const listeners = new Set<() => void>();
 
-let locale: Locale = "da";
+let locale: Locale = "en";
 let hydrated = false;
 
 function hydrate() {
@@ -24,7 +24,7 @@ export function getLocaleSnapshot(): Locale {
 }
 
 export function getServerLocaleSnapshot(): Locale {
-  return "da";
+  return "en";
 }
 
 export function setLocaleValue(next: Locale) {

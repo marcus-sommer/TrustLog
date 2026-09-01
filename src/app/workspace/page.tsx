@@ -78,6 +78,7 @@ export default function WorkspaceHomePage() {
             </ul>
           )}
           <div className="mt-4 flex flex-wrap gap-2">
+            <Button onClick={() => downloadPdf(workspace, undefined, score)}>Download PDF</Button>
             <Button variant="secondary" onClick={() => downloadMarkdown(workspace)}>
               Download Markdown
             </Button>
