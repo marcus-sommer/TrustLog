@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { InterviewWizard } from "@/components/InterviewWizard";
 import { MarketingHeader } from "@/components/MarketingHeader";
@@ -28,9 +27,6 @@ export default function SetupPage() {
         >
           {t.setup.closeInterview}
         </button>
-        <Link href="/workspace" className="text-[13px] text-muted hover:text-ink">
-          {t.setup.skip}
-        </Link>
       </MarketingHeader>
       <InterviewWizard />
     </div>

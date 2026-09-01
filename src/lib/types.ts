@@ -22,6 +22,8 @@ export type HostingRegion = "eu" | "eea" | "uk" | "us" | "mixed" | "unknown";
 
 export type CollaboratorRole = "owner" | "editor" | "viewer";
 
+export type ActivityMode = "system" | "topic";
+
 export type ReminderType =
   | "annual_review"
   | "processor_review"
@@ -63,6 +65,7 @@ export interface SystemRecord {
   isProcessor: boolean;
   dpaInPlace: boolean;
   transfersOutsideEea: boolean;
+  thirdCountryAnswered?: boolean;
   transferMechanism: TransferMechanism;
 }
 
@@ -121,6 +124,9 @@ export interface Workspace {
   reminders: Reminder[];
   interviewStep: number;
   interviewComplete: boolean;
+  activityMode: ActivityMode | "";
+  /** Set after catalog defaults have been stripped so tool cards start empty (0%). */
+  catalogPrefillCleared?: boolean;
 }
 
 export interface SystemTemplate {

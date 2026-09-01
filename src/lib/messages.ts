@@ -113,6 +113,7 @@ export type Messages = {
     no: string;
     thirdCountryBasis: string;
     extraNotes: string;
+    clickToOpen: string;
     hostedWhere: string;
     safeguard: string;
     hostingNotes: string;
@@ -120,6 +121,17 @@ export type Messages = {
     dpaInPlace: string;
     edit: string;
     activitiesTip: string;
+    activityModeTip: string;
+    activityModeSystem: string;
+    activityModeSystemHint: string;
+    activityModeSystemExample: string;
+    activityModeTopic: string;
+    activityModeTopicHint: string;
+    activityModeTopicExample: string;
+    activityModeChange: string;
+    activitiesSystemTip: string;
+    activitiesSystemEmpty: string;
+    purposeSystemHint: string;
     suggestFromTools: string;
     addBlank: string;
     newActivity: string;
@@ -473,7 +485,7 @@ const en: Messages = {
       { title: "Who is responsible", blurb: "Contact person, DPO, and EU representative." },
       { title: "Tools you use", blurb: "Tick the systems that run the business day to day." },
       { title: "Data in each tool", blurb: "For each system: vendor, purpose, people, data, access, and whether anything leaves the EU." },
-      { title: "What you use data for", blurb: "Each purpose becomes a row in your Article 30 record." },
+      { title: "What you use data for", blurb: "Choose system-specific or department/topic cards, then describe why you process the data." },
       { title: "How you protect it", blurb: "A short list of security measures (GDPR Art. 32)." },
       { title: "Review & export", blurb: "Download the PDF and set a reminder to keep it current." },
     ],
@@ -533,6 +545,7 @@ const en: Messages = {
     no: "No",
     thirdCountryBasis: "If data is shared with third countries, what is the legal basis?",
     extraNotes: "Additional notes",
+    clickToOpen: "Click to open",
     hostedWhere: "Where is it hosted?",
     safeguard: "Safeguard if data leaves the EU/EEA",
     hostingNotes: "Hosting notes",
@@ -541,6 +554,21 @@ const en: Messages = {
     edit: "Edit",
     activitiesTip:
       "A “processing activity” is a purpose, not a tool. Payroll, sales, and the website are separate rows even if they share Microsoft 365.",
+    activityModeTip:
+      "How would you rather explain why you use people’s information? Pick the way that feels natural — you can change it later.",
+    activityModeSystem: "One tool at a time",
+    activityModeSystemHint:
+      "You get a card for each programme you already ticked — like e-conomic, Microsoft 365 or payroll. Write what you use that programme for, as you would tell a colleague.",
+    activityModeSystemExample: "Example: “We use e-conomic for invoices and customer accounts.”",
+    activityModeTopic: "By job in the company",
+    activityModeTopicHint:
+      "Describe everyday work in pieces: paying staff, selling, running the website. Then tick the programmes that belong to each job.",
+    activityModeTopicExample: "Example: “Payroll — we pay people with Danløn.”",
+    activityModeChange: "Change approach",
+    activitiesSystemTip:
+      "Each card is a tool from the previous step. Write why you process personal data there — in ordinary language.",
+    activitiesSystemEmpty: "Add at least one tool in the previous step first.",
+    purposeSystemHint: "Why do you process personal data in this system?",
     suggestFromTools: "Suggest from my tools",
     addBlank: "Add a blank activity",
     newActivity: "New activity",
@@ -1323,7 +1351,7 @@ const da: Messages = {
       { title: "Hvem er ansvarlig", blurb: "Kontaktperson, DPO og EU-repræsentant." },
       { title: "Værktøjer I bruger", blurb: "Sæt kryds ved de systemer, der driver hverdagen." },
       { title: "Data i hvert værktøj", blurb: "For hvert system: leverandør, formål, personer, data, adgang, og om noget sendes uden for EU." },
-      { title: "Hvad I bruger data til", blurb: "Hvert formål bliver en række i jeres artikel 30-fortegnelse." },
+      { title: "Hvad I bruger data til", blurb: "Vælg system-specifikke eller afdeling/emne-kort, og beskriv hvorfor I behandler dataene." },
       { title: "Hvordan I beskytter dem", blurb: "En kort liste over sikkerhedsforanstaltninger (GDPR art. 32)." },
       { title: "Gennemgå og eksportér", blurb: "Download PDF’en og sæt en påmindelse, så den ikke bliver forældet." },
     ],
@@ -1383,6 +1411,7 @@ const da: Messages = {
     no: "Nej",
     thirdCountryBasis: "Hvis data deles med tredjelande, hvad er det lovmæssige grundlag for dette?",
     extraNotes: "Supplerende noter",
+    clickToOpen: "Klik for at åbne",
     hostedWhere: "Hvor ligger det?",
     safeguard: "Garanti, hvis data forlader EU/EØS",
     hostingNotes: "Noter om hosting",
@@ -1391,6 +1420,21 @@ const da: Messages = {
     edit: "Rediger",
     activitiesTip:
       "En “behandlingsaktivitet” er et formål, ikke et værktøj. Løn, salg og hjemmesiden er separate rækker, også selvom de deler Microsoft 365.",
+    activityModeTip:
+      "Hvordan vil I helst fortælle, hvorfor I bruger folks oplysninger? Vælg den måde, der føles mest naturlig — I kan skifte senere.",
+    activityModeSystem: "Ét program ad gangen",
+    activityModeSystemHint:
+      "I får et kort for hvert program, I allerede har sat kryds ved — fx e-conomic, Microsoft 365 eller lønsystemet. Skriv, hvad I bruger det til, som I ville forklare det til en kollega.",
+    activityModeSystemExample: "Eksempel: “Vi bruger e-conomic til fakturaer og kundekonti.”",
+    activityModeTopic: "Efter opgave i virksomheden",
+    activityModeTopicHint:
+      "Beskriv hverdagen i bidder: løn, salg, hjemmeside. Bagefter sætter I kryds ved de programmer, der hører til hver opgave.",
+    activityModeTopicExample: "Eksempel: “Løn — vi betaler medarbejdere via Danløn.”",
+    activityModeChange: "Skift tilgang",
+    activitiesSystemTip:
+      "Hvert kort er et værktøj fra forrige trin. Skriv hvorfor I behandler persondata dér — i almindeligt sprog.",
+    activitiesSystemEmpty: "Tilføj mindst ét værktøj i forrige trin først.",
+    purposeSystemHint: "Hvorfor behandler I persondata i dette system?",
     suggestFromTools: "Foreslå ud fra mine værktøjer",
     addBlank: "Tilføj en tom aktivitet",
     newActivity: "Ny aktivitet",

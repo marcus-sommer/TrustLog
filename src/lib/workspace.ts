@@ -17,7 +17,7 @@ export const INTERVIEW_STEPS = [
   { id: "people", title: "Who is responsible", blurb: "Contact person, DPO, and EU representative." },
   { id: "tools", title: "Tools you use", blurb: "Tick the systems that run the business day to day." },
   { id: "flows", title: "Data in each tool", blurb: "For each system: vendor, purpose, people, data, access, and whether anything leaves the EU." },
-  { id: "activities", title: "What you use data for", blurb: "Each purpose becomes a row in your Article 30 record." },
+  { id: "activities", title: "What you use data for", blurb: "Choose system-specific or department/topic cards, then describe why you process the data." },
   { id: "protection", title: "How you protect it", blurb: "A short list of security measures (GDPR Art. 32)." },
   { id: "review", title: "Review & export", blurb: "Download the PDF and set a reminder to keep it current." },
 ] as const;
@@ -86,6 +86,8 @@ export function createWorkspace(partial?: Partial<Workspace>): Workspace {
     ],
     interviewStep: 0,
     interviewComplete: false,
+    activityMode: "",
+    catalogPrefillCleared: true,
     ...partial,
   };
 }
@@ -100,27 +102,32 @@ export function hasOpenDraft(workspace: Workspace): boolean {
   );
 }
 
-export function systemFromCatalog(catalogId: string): SystemRecord {
+export function systemFromCatalog(
+  catalogId: string,
+  options?: { prefill?: boolean },
+): SystemRecord {
   const template = SYSTEM_TEMPLATES.find((item) => item.id === catalogId);
   if (!template) {
     throw new Error(`Unknown system template: ${catalogId}`);
   }
+  const prefill = options?.prefill ?? false;
   return {
     id: createId("sys"),
     catalogId: template.id,
     name: template.name,
-    vendor: template.vendor,
+    vendor: prefill ? template.vendor : "",
     category: template.category,
-    purpose: template.purpose,
-    dataTypes: [...template.dataTypes],
-    dataSubjects: [...template.dataSubjects],
+    purpose: prefill ? template.purpose : "",
+    dataTypes: prefill ? [...template.dataTypes] : [],
+    dataSubjects: prefill ? [...template.dataSubjects] : [],
     whoHasAccess: "",
     hostingRegion: template.hostingRegion,
-    hostingNotes: template.hostingNotes,
+    hostingNotes: prefill ? template.hostingNotes : "",
     isProcessor: template.isProcessor,
-    dpaInPlace: true,
-    transfersOutsideEea: template.transfersOutsideEea,
-    transferMechanism: template.transferMechanism,
+    dpaInPlace: prefill,
+    transfersOutsideEea: prefill ? template.transfersOutsideEea : false,
+    thirdCountryAnswered: prefill,
+    transferMechanism: prefill ? template.transferMechanism : "none",
   };
 }
 
@@ -185,21 +192,21 @@ export function suggestActivitiesForSystems(systems: SystemRecord[]): string[] {
 }
 
 export function createCustomSystem(name: string, category = "Other"): SystemRecord {
-  const defaults = SYSTEM_CATEGORY_DEFAULTS[category];
   return {
     id: createId("sys"),
     name,
     vendor: "",
     category,
-    purpose: defaults?.purpose ?? "",
-    dataTypes: defaults?.dataTypes ? [...defaults.dataTypes] : [],
-    dataSubjects: defaults?.dataSubjects ? [...defaults.dataSubjects] : [],
+    purpose: "",
+    dataTypes: [],
+    dataSubjects: [],
     whoHasAccess: "",
     hostingRegion: "unknown",
     hostingNotes: "",
     isProcessor: true,
     dpaInPlace: false,
     transfersOutsideEea: false,
+    thirdCountryAnswered: false,
     transferMechanism: "none",
   };
 }
@@ -224,9 +231,81 @@ export function createCustomActivity(): ProcessingActivity {
   };
 }
 
+export function activityFromSystem(system: SystemRecord): ProcessingActivity {
+  return {
+    ...createCustomActivity(),
+    name: system.name,
+    department: system.category,
+    purpose: system.purpose,
+    dataSubjects: [...system.dataSubjects],
+    personalData: [...system.dataTypes],
+    systemIds: [system.id],
+    recipients: system.vendor ? [system.vendor] : [],
+    transfersOutsideEea: system.transfersOutsideEea,
+    transferMechanism: system.transferMechanism,
+  };
+}
+
+function emptySystemInterviewFields(system: SystemRecord): SystemRecord {
+  return {
+    ...system,
+    vendor: "",
+    purpose: "",
+    dataTypes: [],
+    dataSubjects: [],
+    whoHasAccess: "",
+    hostingNotes: "",
+    dpaInPlace: false,
+    transfersOutsideEea: false,
+    thirdCountryAnswered: false,
+    transferMechanism: "none",
+  };
+}
+
+export function systemCardProgress(system: SystemRecord): number {
+  const checks = [
+    Boolean((system.vendor ?? "").trim()),
+    Boolean((system.purpose ?? "").trim()),
+    (system.dataSubjects ?? []).length > 0,
+    (system.dataTypes ?? []).length > 0,
+    Boolean((system.whoHasAccess ?? "").trim()),
+    Boolean(system.thirdCountryAnswered),
+  ];
+  if (system.thirdCountryAnswered && system.transfersOutsideEea) {
+    checks.push(system.transferMechanism !== "none");
+  }
+  const done = checks.filter(Boolean).length;
+  return Math.round((done / checks.length) * 100);
+}
+
+export function clearCatalogPrefill(workspace: Workspace): Workspace {
+  if (workspace.catalogPrefillCleared || workspace.interviewComplete) {
+    return workspace;
+  }
+  return {
+    ...workspace,
+    catalogPrefillCleared: true,
+    systems: workspace.systems.map(emptySystemInterviewFields),
+  };
+}
+
+export function ensureSystemActivities(workspace: Workspace): ProcessingActivity[] {
+  const next = [...workspace.activities];
+  let added = false;
+  for (const system of workspace.systems) {
+    const exists = next.some(
+      (activity) => activity.systemIds.length === 1 && activity.systemIds[0] === system.id,
+    );
+    if (exists) continue;
+    next.push(activityFromSystem(system));
+    added = true;
+  }
+  return added ? next : workspace.activities;
+}
+
 export function sampleWorkspace(): Workspace {
   const systems = ["m365", "economic", "danlon", "pipedrive", "wordpress", "cookiebot"].map(
-    systemFromCatalog,
+    (id) => systemFromCatalog(id, { prefill: true }),
   );
   const activityIds = suggestActivitiesForSystems(systems);
   const activities = activityIds.map((id) => activityFromCatalog(id, systems));
@@ -253,6 +332,7 @@ export function sampleWorkspace(): Workspace {
     },
     systems,
     activities,
+    activityMode: "topic",
     interviewStep: INTERVIEW_STEPS.length - 1,
     interviewComplete: true,
     updatedBy: "Maja Holm",

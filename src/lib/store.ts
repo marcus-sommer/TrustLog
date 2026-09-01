@@ -1,6 +1,6 @@
 "use client";
 
-import { createWorkspace } from "./workspace";
+import { clearCatalogPrefill, createWorkspace } from "./workspace";
 import {
   loadEditorName,
   loadLocalWorkspace,
@@ -42,7 +42,10 @@ function emit() {
 
 function hydrate() {
   if (hydrated || typeof window === "undefined") return;
-  workspace = loadLocalWorkspace() ?? createWorkspace();
+  const loaded = loadLocalWorkspace() ?? createWorkspace();
+  const next = clearCatalogPrefill(loaded);
+  workspace = next;
+  if (next !== loaded) saveLocalWorkspace(next);
   editorName = loadEditorName();
   hydrated = true;
 }

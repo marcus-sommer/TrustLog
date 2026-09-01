@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type Dispatch, type SetStateAction } from "react";
+import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from "react";
 import { useRouter } from "next/navigation";
 import {
   ACTIVITY_TEMPLATES,
@@ -22,16 +22,16 @@ import {
   activityText,
   dataLabel,
   subjectLabel,
-  systemNotes,
-  systemPurpose,
   tomCopy,
 } from "@/lib/localize";
 import {
   activityFromCatalog,
   createCustomActivity,
   createCustomSystem,
+  ensureSystemActivities,
   INTERVIEW_STEPS,
   suggestActivitiesForSystems,
+  systemCardProgress,
   systemFromCatalog,
 } from "@/lib/workspace";
 import type {
@@ -58,6 +58,40 @@ function toggleValue<T>(list: T[], value: T): T[] {
   return list.includes(value) ? list.filter((item) => item !== value) : [...list, value];
 }
 
+function ModePickCard({
+  emoji,
+  title,
+  body,
+  example,
+  onClick,
+}: {
+  emoji: string;
+  title: string;
+  body: string;
+  example: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="rounded-2xl border border-line bg-raised p-6 text-left transition hover:border-accent hover:bg-white"
+    >
+      <span
+        className="grid h-14 w-14 place-items-center rounded-2xl bg-accent-soft text-[28px] leading-none"
+        aria-hidden="true"
+      >
+        {emoji}
+      </span>
+      <span className="mt-5 block font-serif text-[22px] leading-7 text-ink">{title}</span>
+      <span className="mt-3 block text-[14.5px] leading-7 text-ink-soft">{body}</span>
+      <span className="mt-4 block rounded-xl bg-paper px-3.5 py-2.5 text-[13px] leading-6 text-muted">
+        {example}
+      </span>
+    </button>
+  );
+}
+
 export function InterviewWizard() {
   const router = useRouter();
   const { workspace, update, reset } = useWorkspace();
@@ -69,6 +103,12 @@ export function InterviewWizard() {
   const [openActivity, setOpenActivity] = useState<string | null>(
     workspace.activities[0]?.id ?? null,
   );
+
+  useEffect(() => {
+    if (workspace.activityMode !== "system") return;
+    const next = ensureSystemActivities(workspace);
+    if (next !== workspace.activities) update({ activities: next });
+  }, [workspace, update]);
 
   const groupedSystems = useMemo(() => {
     const groups = new Map<string, typeof SYSTEM_TEMPLATES>();
@@ -210,10 +250,8 @@ export function InterviewWizard() {
           </div>
           {step < INTERVIEW_STEPS.length - 1 ? (
             <Button
-              onClick={() => {
-                if (step === 2) applySuggestedActivities();
-                go(step + 1);
-              }}
+              onClick={() => go(step + 1)}
+              disabled={step === 4 && workspace.activityMode !== "system" && workspace.activityMode !== "topic"}
             >
               {t.setup.continue}
             </Button>
@@ -539,14 +577,40 @@ export function InterviewWizard() {
     return (
       <>
         <Tip>{t.interview.flowsTip}</Tip>
-        <div className="space-y-6">
-          {workspace.systems.map((system) => (
-            <article key={system.id} className="rounded-2xl border border-line bg-raised p-6">
-              <h2 className="font-serif text-[22px] leading-7 text-ink">{system.name}</h2>
-              <p className="mt-1 text-[13px] text-muted">
-                {t.categories[system.category] ?? system.category}
-              </p>
-              <div className="mt-6 space-y-5">
+        <div className="space-y-3">
+          {workspace.systems.map((system) => {
+            const percent = systemCardProgress(system);
+            return (
+              <details key={system.id} className="group rounded-2xl border border-line bg-raised">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-6 py-5 [&::-webkit-details-marker]:hidden">
+                  <div className="min-w-0">
+                    <h2 className="font-serif text-[20px] leading-7 text-ink">{system.name}</h2>
+                    <p className="mt-1 text-[13px] text-muted">
+                      {t.categories[system.category] ?? system.category}
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-3">
+                    <span className="flex items-center gap-2" aria-label={`${percent}%`}>
+                      <span className="h-1.5 w-14 overflow-hidden rounded-full bg-line">
+                        <span
+                          className="block h-full rounded-full bg-accent"
+                          style={{ width: `${percent}%` }}
+                        />
+                      </span>
+                      <span
+                        className={`tabular-nums text-[13px] font-medium ${
+                          percent === 100 ? "text-accent" : "text-muted"
+                        }`}
+                      >
+                        {percent}%
+                      </span>
+                    </span>
+                    <span className="text-[13px] text-accent group-open:hidden">
+                      {t.interview.clickToOpen}
+                    </span>
+                  </div>
+                </summary>
+              <div className="space-y-5 border-t border-line px-6 pb-6 pt-5">
                 <TextField
                   label={t.interview.vendor}
                   value={system.vendor}
@@ -555,7 +619,7 @@ export function InterviewWizard() {
                 <TextArea
                   label={t.interview.usedFor}
                   hint={t.interview.usedForHint}
-                  value={systemPurpose(locale, system)}
+                  value={system.purpose}
                   onChange={(e) => patchSystem(system.id, { purpose: e.target.value })}
                   className="min-h-[72px]"
                 />
@@ -605,21 +669,23 @@ export function InterviewWizard() {
                   <p className="mb-2 text-[13px] font-medium text-ink">{t.interview.thirdCountry}</p>
                   <div className="grid gap-2 sm:grid-cols-2">
                     <ChoiceCard
-                      selected={!system.transfersOutsideEea}
+                      selected={Boolean(system.thirdCountryAnswered) && !system.transfersOutsideEea}
                       title={t.interview.no}
                       onClick={() =>
                         patchSystem(system.id, {
                           transfersOutsideEea: false,
+                          thirdCountryAnswered: true,
                           transferMechanism: "none",
                         })
                       }
                     />
                     <ChoiceCard
-                      selected={system.transfersOutsideEea}
+                      selected={Boolean(system.thirdCountryAnswered) && system.transfersOutsideEea}
                       title={t.interview.yes}
                       onClick={() =>
                         patchSystem(system.id, {
                           transfersOutsideEea: true,
+                          thirdCountryAnswered: true,
                           transferMechanism:
                             system.transferMechanism === "none" ? "sccs" : system.transferMechanism,
                         })
@@ -627,7 +693,7 @@ export function InterviewWizard() {
                     />
                   </div>
                 </div>
-                {system.transfersOutsideEea ? (
+                {system.thirdCountryAnswered && system.transfersOutsideEea ? (
                   <SelectField
                     label={t.interview.thirdCountryBasis}
                     value={system.transferMechanism}
@@ -647,13 +713,14 @@ export function InterviewWizard() {
                 ) : null}
                 <TextArea
                   label={t.interview.extraNotes}
-                  value={systemNotes(locale, system)}
+                  value={system.hostingNotes}
                   onChange={(e) => patchSystem(system.id, { hostingNotes: e.target.value })}
                   className="min-h-[140px]"
                 />
               </div>
-            </article>
-          ))}
+            </details>
+            );
+          })}
         </div>
       </>
     );
@@ -670,9 +737,69 @@ export function InterviewWizard() {
     applySuggestedActivities: () => void;
     patchActivity: (id: string, patch: Partial<ProcessingActivity>) => void;
   }) {
+    const mode = workspace.activityMode || "";
     const used = new Set(workspace.activities.map((a) => a.catalogId));
+
+    if (!mode) {
+      return (
+        <>
+          <Tip>{t.interview.activityModeTip}</Tip>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <ModePickCard
+              emoji="💻"
+              title={t.interview.activityModeSystem}
+              body={t.interview.activityModeSystemHint}
+              example={t.interview.activityModeSystemExample}
+              onClick={() =>
+                update({
+                  activityMode: "system",
+                  activities: ensureSystemActivities(workspace),
+                })
+              }
+            />
+            <ModePickCard
+              emoji="📋"
+              title={t.interview.activityModeTopic}
+              body={t.interview.activityModeTopicHint}
+              example={t.interview.activityModeTopicExample}
+              onClick={() => update({ activityMode: "topic" })}
+            />
+          </div>
+        </>
+      );
+    }
+
+    const lockToSystem = mode === "system";
+    const listedActivities =
+      mode === "system"
+        ? workspace.systems
+            .map((system) =>
+              workspace.activities.find(
+                (activity) => activity.systemIds.length === 1 && activity.systemIds[0] === system.id,
+              ),
+            )
+            .filter((activity): activity is ProcessingActivity => Boolean(activity))
+        : workspace.activities;
+
     return (
       <>
+        <div className="flex justify-end">
+          <button
+            type="button"
+            className="text-[13px] text-muted hover:text-ink"
+            onClick={() => update({ activityMode: "" })}
+          >
+            {t.interview.activityModeChange}
+          </button>
+        </div>
+        {mode === "system" ? (
+          <Tip>
+            {workspace.systems.length === 0
+              ? t.interview.activitiesSystemEmpty
+              : t.interview.activitiesSystemTip}
+          </Tip>
+        ) : (
+          <>
         <Tip>{t.interview.activitiesTip}</Tip>
         <div className="flex flex-wrap gap-2">
           <Button variant="secondary" onClick={applySuggestedActivities}>
@@ -715,10 +842,12 @@ export function InterviewWizard() {
             ))}
           </div>
         </div>
-        {workspace.activities.map((activity) => (
+          </>
+        )}
+        {listedActivities.map((activity) => (
           <details
             key={activity.id}
-            open={openActivity === activity.id}
+            open={lockToSystem || openActivity === activity.id}
             onToggle={(e) => {
               if ((e.target as HTMLDetailsElement).open) setOpenActivity(activity.id);
             }}
@@ -729,14 +858,19 @@ export function InterviewWizard() {
                 <div>
                   <div className="font-medium text-ink">{activityName(locale, activity)}</div>
                   <div className="text-[12.5px] text-muted">
-                    {activity.legalBases.length
-                      ? activity.legalBases.map((b) => t.legalBasis[b]?.label).join(" · ")
-                      : t.interview.basisNotSet}
-                    {activity.retention
-                      ? ` · ${t.interview.retentionSet}`
-                      : ` · ${t.interview.addRetention}`}
+                    {lockToSystem
+                      ? t.categories[activity.department] ?? activity.department
+                      : activity.legalBases.length
+                        ? activity.legalBases.map((b) => t.legalBasis[b]?.label).join(" · ")
+                        : t.interview.basisNotSet}
+                    {lockToSystem
+                      ? null
+                      : activity.retention
+                        ? ` · ${t.interview.retentionSet}`
+                        : ` · ${t.interview.addRetention}`}
                   </div>
                 </div>
+                {lockToSystem ? null : (
                 <button
                   type="button"
                   className="text-[13px] text-muted hover:text-danger"
@@ -749,9 +883,11 @@ export function InterviewWizard() {
                 >
                   {t.interview.remove}
                 </button>
+                )}
               </div>
             </summary>
             <div className="mt-4 grid gap-4 border-t border-line pt-4">
+              {lockToSystem ? null : (
               <div className="grid gap-4 sm:grid-cols-2">
                 <TextField
                   label={t.interview.name}
@@ -764,9 +900,10 @@ export function InterviewWizard() {
                   onChange={(e) => patchActivity(activity.id, { department: e.target.value })}
                 />
               </div>
+              )}
               <TextArea
                 label={t.interview.purpose}
-                hint={t.interview.purposeHint}
+                hint={lockToSystem ? t.interview.purposeSystemHint : t.interview.purposeHint}
                 value={activityText(locale, activity, "purpose")}
                 onChange={(e) => patchActivity(activity.id, { purpose: e.target.value })}
               />
@@ -854,6 +991,7 @@ export function InterviewWizard() {
                 value={activityText(locale, activity, "legalBasisNotes")}
                 onChange={(e) => patchActivity(activity.id, { legalBasisNotes: e.target.value })}
               />
+              {lockToSystem ? null : (
               <div>
                 <p className="mb-2 text-[13px] font-medium text-ink">{t.interview.systemsForActivity}</p>
                 <div className="flex flex-wrap gap-1.5">
@@ -876,6 +1014,7 @@ export function InterviewWizard() {
                   )}
                 </div>
               </div>
+              )}
               <TextArea
                 label={t.interview.whoReceives}
                 hint={t.interview.whoReceivesHint}
