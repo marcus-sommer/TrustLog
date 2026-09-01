@@ -70,6 +70,7 @@ export function RopaView({ workspace }: { workspace: Workspace }) {
                   "Hosting",
                   "Data",
                   "People",
+                  "External parties",
                   "Role",
                   "DPA",
                   "Transfers",
@@ -88,6 +89,13 @@ export function RopaView({ workspace }: { workspace: Workspace }) {
                   <td className="py-2.5 pr-4">{regionLabel(system.hostingRegion)}</td>
                   <td className="py-2.5 pr-4">{system.dataTypes.join(", ") || "—"}</td>
                   <td className="py-2.5 pr-4">{system.dataSubjects.join(", ") || "—"}</td>
+                  <td className="py-2.5 pr-4">
+                    {system.sharedExternallyAnswered
+                      ? system.sharedExternally
+                        ? (system.externalParties ?? "").trim() || "Yes"
+                        : "No"
+                      : "—"}
+                  </td>
                   <td className="py-2.5 pr-4">{system.isProcessor ? "Processor" : "Independent"}</td>
                   <td className="py-2.5 pr-4">{system.dpaInPlace ? "Yes" : "No"}</td>
                   <td className="py-2.5 pr-4">

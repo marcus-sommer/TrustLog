@@ -108,6 +108,9 @@ export type Messages = {
     whoseData: string;
     whoHasAccess: string;
     whoHasAccessHint: string;
+    sharedExternally: string;
+    sharedExternallyWho: string;
+    sharedExternallyWhoHint: string;
     thirdCountry: string;
     yes: string;
     no: string;
@@ -485,7 +488,7 @@ const en: Messages = {
       { title: "Who is responsible", blurb: "Contact person, DPO, and EU representative." },
       { title: "Tools you use", blurb: "Tick the systems that run the business day to day." },
       { title: "Data in each tool", blurb: "For each system: vendor, purpose, people, data, access, and whether anything leaves the EU." },
-      { title: "What you use data for", blurb: "Choose system-specific or department/topic cards, then describe why you process the data." },
+      { title: "What you use data for", blurb: "How would you rather explain why you use people’s information? Pick the way that feels natural — you can change it later." },
       { title: "How you protect it", blurb: "A short list of security measures (GDPR Art. 32)." },
       { title: "Review & export", blurb: "Download the PDF and set a reminder to keep it current." },
     ],
@@ -540,6 +543,9 @@ const en: Messages = {
     whoseData: "Who do you hold data about in this system?",
     whoHasAccess: "Who has access to this system?",
     whoHasAccessHint: "e.g. HR, management, or all staff",
+    sharedExternally: "Is data shared with anyone outside the company?",
+    sharedExternallyWho: "Who?",
+    sharedExternallyWhoHint: "e.g. accountant, payroll provider, or the software vendor",
     thirdCountry: "Is data shared with third countries?",
     yes: "Yes",
     no: "No",
@@ -1351,7 +1357,7 @@ const da: Messages = {
       { title: "Hvem er ansvarlig", blurb: "Kontaktperson, DPO og EU-repræsentant." },
       { title: "Værktøjer I bruger", blurb: "Sæt kryds ved de systemer, der driver hverdagen." },
       { title: "Data i hvert værktøj", blurb: "For hvert system: leverandør, formål, personer, data, adgang, og om noget sendes uden for EU." },
-      { title: "Hvad I bruger data til", blurb: "Vælg system-specifikke eller afdeling/emne-kort, og beskriv hvorfor I behandler dataene." },
+      { title: "Hvad I bruger data til", blurb: "Hvordan vil I helst fortælle, hvorfor I bruger folks oplysninger? Vælg den måde, der føles mest naturlig — I kan skifte senere." },
       { title: "Hvordan I beskytter dem", blurb: "En kort liste over sikkerhedsforanstaltninger (GDPR art. 32)." },
       { title: "Gennemgå og eksportér", blurb: "Download PDF’en og sæt en påmindelse, så den ikke bliver forældet." },
     ],
@@ -1406,6 +1412,9 @@ const da: Messages = {
     whoseData: "Hvem har I data om i dette system?",
     whoHasAccess: "Hvem har adgang til systemet?",
     whoHasAccessHint: "Fx HR, ledelse eller alle medarbejdere",
+    sharedExternally: "Deles data med eksterne parter?",
+    sharedExternallyWho: "Hvem?",
+    sharedExternallyWhoHint: "Fx revisor, lønbureau eller softwareleverandøren",
     thirdCountry: "Deles data med tredjelande?",
     yes: "Ja",
     no: "Nej",

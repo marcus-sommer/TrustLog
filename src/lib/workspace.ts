@@ -17,7 +17,7 @@ export const INTERVIEW_STEPS = [
   { id: "people", title: "Who is responsible", blurb: "Contact person, DPO, and EU representative." },
   { id: "tools", title: "Tools you use", blurb: "Tick the systems that run the business day to day." },
   { id: "flows", title: "Data in each tool", blurb: "For each system: vendor, purpose, people, data, access, and whether anything leaves the EU." },
-  { id: "activities", title: "What you use data for", blurb: "Choose system-specific or department/topic cards, then describe why you process the data." },
+  { id: "activities", title: "What you use data for", blurb: "How would you rather explain why you use people’s information? Pick the way that feels natural — you can change it later." },
   { id: "protection", title: "How you protect it", blurb: "A short list of security measures (GDPR Art. 32)." },
   { id: "review", title: "Review & export", blurb: "Download the PDF and set a reminder to keep it current." },
 ] as const;
@@ -125,6 +125,9 @@ export function systemFromCatalog(
     hostingNotes: prefill ? template.hostingNotes : "",
     isProcessor: template.isProcessor,
     dpaInPlace: prefill,
+    sharedExternally: prefill ? template.isProcessor : false,
+    sharedExternallyAnswered: prefill,
+    externalParties: prefill && template.isProcessor ? template.vendor : "",
     transfersOutsideEea: prefill ? template.transfersOutsideEea : false,
     thirdCountryAnswered: prefill,
     transferMechanism: prefill ? template.transferMechanism : "none",
@@ -205,6 +208,9 @@ export function createCustomSystem(name: string, category = "Other"): SystemReco
     hostingNotes: "",
     isProcessor: true,
     dpaInPlace: false,
+    sharedExternally: false,
+    sharedExternallyAnswered: false,
+    externalParties: "",
     transfersOutsideEea: false,
     thirdCountryAnswered: false,
     transferMechanism: "none",
@@ -240,7 +246,12 @@ export function activityFromSystem(system: SystemRecord): ProcessingActivity {
     dataSubjects: [...system.dataSubjects],
     personalData: [...system.dataTypes],
     systemIds: [system.id],
-    recipients: system.vendor ? [system.vendor] : [],
+    recipients: system.sharedExternally
+      ? (system.externalParties ?? "")
+          .split(/[,;\n]/)
+          .map((item) => item.trim())
+          .filter(Boolean)
+      : [],
     transfersOutsideEea: system.transfersOutsideEea,
     transferMechanism: system.transferMechanism,
   };
@@ -256,6 +267,9 @@ function emptySystemInterviewFields(system: SystemRecord): SystemRecord {
     whoHasAccess: "",
     hostingNotes: "",
     dpaInPlace: false,
+    sharedExternally: false,
+    sharedExternallyAnswered: false,
+    externalParties: "",
     transfersOutsideEea: false,
     thirdCountryAnswered: false,
     transferMechanism: "none",
@@ -269,8 +283,12 @@ export function systemCardProgress(system: SystemRecord): number {
     (system.dataSubjects ?? []).length > 0,
     (system.dataTypes ?? []).length > 0,
     Boolean((system.whoHasAccess ?? "").trim()),
+    Boolean(system.sharedExternallyAnswered),
     Boolean(system.thirdCountryAnswered),
   ];
+  if (system.sharedExternallyAnswered && system.sharedExternally) {
+    checks.push(Boolean((system.externalParties ?? "").trim()));
+  }
   if (system.thirdCountryAnswered && system.transfersOutsideEea) {
     checks.push(system.transferMechanism !== "none");
   }

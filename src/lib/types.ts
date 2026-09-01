@@ -64,6 +64,9 @@ export interface SystemRecord {
   hostingNotes: string;
   isProcessor: boolean;
   dpaInPlace: boolean;
+  sharedExternally: boolean;
+  sharedExternallyAnswered?: boolean;
+  externalParties: string;
   transfersOutsideEea: boolean;
   thirdCountryAnswered?: boolean;
   transferMechanism: TransferMechanism;

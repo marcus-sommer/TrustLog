@@ -20,7 +20,7 @@ export function workspaceToMarkdown(workspace: Workspace): string {
   const systemRows = workspace.systems
     .map(
       (system) =>
-        `| ${system.name} | ${system.vendor || "—"} | ${regionLabel(system.hostingRegion)} | ${join(system.dataTypes)} | ${join(system.dataSubjects)} | ${system.isProcessor ? "Processor" : "Independent"} | ${system.dpaInPlace ? "Yes" : "No"} | ${system.transfersOutsideEea ? transferLabel(system.transferMechanism) : "EEA only"} |`,
+        `| ${system.name} | ${system.vendor || "—"} | ${regionLabel(system.hostingRegion)} | ${join(system.dataTypes)} | ${join(system.dataSubjects)} | ${system.sharedExternallyAnswered ? (system.sharedExternally ? (system.externalParties ?? "").trim() || "Yes" : "No") : "—"} | ${system.isProcessor ? "Processor" : "Independent"} | ${system.dpaInPlace ? "Yes" : "No"} | ${system.transfersOutsideEea ? transferLabel(system.transferMechanism) : "EEA only"} |`,
     )
     .join("\n");
 
@@ -86,9 +86,9 @@ Generated with TrustLog on ${formatDate(new Date().toISOString())}. Last edited 
 
 ## 2. Systems and data flows
 
-| System | Vendor | Hosting | Data | People | Role | DPA | Transfers |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-${systemRows || "| — | — | — | — | — | — | — | — |"}
+| System | Vendor | Hosting | Data | People | External parties | Role | DPA | Transfers |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+${systemRows || "| — | — | — | — | — | — | — | — | — |"}
 
 ## 3. Processing activities
 

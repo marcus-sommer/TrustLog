@@ -163,13 +163,18 @@ export function downloadPdf(
   autoTable(doc, {
     startY: y,
     margin: { left: margin, right: margin },
-    head: [[r.system, r.vendor, r.hosting, r.data, r.people, `${p.processor} / DPA`, r.transfers]],
+    head: [[r.system, r.vendor, r.hosting, r.data, r.people, r.recipients, `${p.processor} / DPA`, r.transfers]],
     body: workspace.systems.map((system) => [
       system.name,
       systemVendor(locale, system) || t.dash,
       regionLabel(system.hostingRegion, locale),
       joinData(locale, system.dataTypes),
       joinSubjects(locale, system.dataSubjects),
+      system.sharedExternallyAnswered
+        ? system.sharedExternally
+          ? (system.externalParties ?? "").trim() || p.yes
+          : p.no
+        : t.dash,
       `${system.isProcessor ? p.processor : p.independent} / DPA ${system.dpaInPlace ? p.dpaYes : p.dpaNo}`,
       system.transfersOutsideEea ? transferLabel(system.transferMechanism, locale) : p.eeaOnly,
     ]),

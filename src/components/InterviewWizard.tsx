@@ -170,6 +170,17 @@ export function InterviewWizard() {
     router.push("/");
   }
 
+  const stepBlurb =
+    step === 4
+      ? !workspace.activityMode
+        ? t.interview.activityModeTip
+        : workspace.activityMode === "system"
+          ? workspace.systems.length === 0
+            ? t.interview.activitiesSystemEmpty
+            : t.interview.activitiesSystemTip
+          : t.interview.activitiesTip
+      : meta.blurb;
+
   return (
     <div className="mx-auto flex min-h-full max-w-6xl gap-12 px-5 py-10 lg:px-8">
       <ol className="sticky top-10 hidden h-fit w-52 shrink-0 lg:block">
@@ -215,7 +226,7 @@ export function InterviewWizard() {
           kicker={fill(t.setup.stepOf, { current: step + 1, total: INTERVIEW_STEPS.length })}
           title={meta.title}
         >
-          {meta.blurb}
+          {stepBlurb}
         </SectionTitle>
 
         <div className="mt-10 max-w-3xl space-y-8">
@@ -666,6 +677,42 @@ export function InterviewWizard() {
                   onChange={(e) => patchSystem(system.id, { whoHasAccess: e.target.value })}
                 />
                 <div>
+                  <p className="mb-2 text-[13px] font-medium text-ink">
+                    {t.interview.sharedExternally}
+                  </p>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <ChoiceCard
+                      selected={Boolean(system.sharedExternallyAnswered) && !system.sharedExternally}
+                      title={t.interview.no}
+                      onClick={() =>
+                        patchSystem(system.id, {
+                          sharedExternally: false,
+                          sharedExternallyAnswered: true,
+                          externalParties: "",
+                        })
+                      }
+                    />
+                    <ChoiceCard
+                      selected={Boolean(system.sharedExternallyAnswered) && system.sharedExternally}
+                      title={t.interview.yes}
+                      onClick={() =>
+                        patchSystem(system.id, {
+                          sharedExternally: true,
+                          sharedExternallyAnswered: true,
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+                {system.sharedExternallyAnswered && system.sharedExternally ? (
+                  <TextField
+                    label={t.interview.sharedExternallyWho}
+                    hint={t.interview.sharedExternallyWhoHint}
+                    value={system.externalParties ?? ""}
+                    onChange={(e) => patchSystem(system.id, { externalParties: e.target.value })}
+                  />
+                ) : null}
+                <div>
                   <p className="mb-2 text-[13px] font-medium text-ink">{t.interview.thirdCountry}</p>
                   <div className="grid gap-2 sm:grid-cols-2">
                     <ChoiceCard
@@ -743,7 +790,6 @@ export function InterviewWizard() {
     if (!mode) {
       return (
         <>
-          <Tip>{t.interview.activityModeTip}</Tip>
           <div className="grid gap-4 sm:grid-cols-2">
             <ModePickCard
               emoji="💻"
@@ -792,15 +838,8 @@ export function InterviewWizard() {
             {t.interview.activityModeChange}
           </button>
         </div>
-        {mode === "system" ? (
-          <Tip>
-            {workspace.systems.length === 0
-              ? t.interview.activitiesSystemEmpty
-              : t.interview.activitiesSystemTip}
-          </Tip>
-        ) : (
+        {mode === "system" ? null : (
           <>
-        <Tip>{t.interview.activitiesTip}</Tip>
         <div className="flex flex-wrap gap-2">
           <Button variant="secondary" onClick={applySuggestedActivities}>
             {t.interview.suggestFromTools}

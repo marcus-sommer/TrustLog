@@ -29,7 +29,7 @@ export default function SystemsPage() {
         <table className="w-full min-w-[800px] border-collapse text-left text-[13.5px]">
           <thead>
             <tr className="border-b border-ink/20 text-[12px] uppercase tracking-wide text-muted">
-              {["System", "Purpose", "Hosting", "Data", "Processor", "Transfers"].map((h) => (
+              {["System", "Purpose", "Hosting", "Data", "External parties", "Processor", "Transfers"].map((h) => (
                 <th key={h} className="py-2 pr-4 font-medium">
                   {h}
                 </th>
@@ -46,6 +46,13 @@ export default function SystemsPage() {
                 <td className="py-3 pr-4 text-ink-soft">{system.purpose}</td>
                 <td className="py-3 pr-4">{regionLabel(system.hostingRegion)}</td>
                 <td className="py-3 pr-4 text-ink-soft">{system.dataTypes.join(", ") || "—"}</td>
+                <td className="py-3 pr-4 text-ink-soft">
+                  {system.sharedExternallyAnswered
+                    ? system.sharedExternally
+                      ? (system.externalParties ?? "").trim() || "Yes"
+                      : "No"
+                    : "—"}
+                </td>
                 <td className="py-3 pr-4">
                   {system.isProcessor ? "Yes" : "Independent"}
                   {system.isProcessor ? ` · DPA ${system.dpaInPlace ? "yes" : "no"}` : ""}
